@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Alphaman ...  미국 BIS Entity List — 중국 기업</title>
+  <title>Alphaman ...   미국 BIS Entity List — 중국 기업</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0a0e1a; color: #e2e8f0; font-family: 'Segoe UI', 'Noto Sans KR', sans-serif; font-size: 14px; }
@@ -17,15 +17,24 @@
     .stat-box .slabel { font-size: 11px; color: #64748b; margin-bottom: 2px; }
     .stat-box .svalue { font-size: 14px; font-weight: 700; color: #f1f5f9; }
 
+    #liveBtn { background: #1d4ed8; border: none; color: #fff; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    #liveBtn:disabled { background: #334155; cursor: default; }
+
+    /* Progress bar */
+    #progressWrap { display: none; margin-top: 12px; }
+    #progressLabel { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+    #progressBar { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+    #progressFill { height: 100%; background: linear-gradient(90deg, #1d4ed8, #7c3aed); border-radius: 3px; width: 0%; transition: width .3s; }
+
+    #alertBox { margin-top: 10px; font-size: 12px; padding: 7px 13px; border-radius: 6px; display: none; }
+    .alert-error { color: #fbbf24; background: #1c1400; }
+    .alert-info  { color: #6ee7b7; background: #022c22; }
+
     #controls { max-width: 1200px; margin: 0 auto; padding: 20px 24px 0; }
     .search-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
     #searchInput { flex: 1; min-width: 200px; background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 9px 14px; border-radius: 10px; font-size: 14px; }
     #searchInput:focus { outline: 2px solid #3b82f6; }
     select, .sort-btn { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 9px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; }
-    .sort-btn:hover { background: #263348; }
-    #liveBtn { margin-left: auto; background: #1d4ed8; border: none; color: #fff; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
-    #liveBtn:disabled { background: #334155; cursor: default; }
-    #liveError { margin-top: 8px; font-size: 12px; color: #fbbf24; background: #1c1400; padding: 6px 12px; border-radius: 6px; display: none; }
 
     .cat-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .cat-btn { padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; }
@@ -46,15 +55,15 @@
     tbody tr:hover { background: #172033 !important; }
     tbody tr.expanded { background: #1e293b !important; }
 
-    .num-cell  { color: #475569; text-align: center; width: 44px; }
-    .city-cell { color: #94a3b8; width: 100px; }
-    .year-cell { text-align: center; width: 88px; }
+    .num-cell   { color: #475569; text-align: center; width: 50px; }
+    .city-cell  { color: #94a3b8; width: 110px; }
+    .year-cell  { text-align: center; width: 90px; }
     .year-badge { padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; }
     .year-recent { background: #7f1d1d; color: #fca5a5; }
     .year-old    { background: #1e3a5f; color: #93c5fd; }
-    .reason-cell { color: #94a3b8; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reason-cell { color: #94a3b8; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .reason-cell.expanded-cell { white-space: normal; overflow: visible; }
-    .name-main { font-weight: 600; color: #f1f5f9; line-height: 1.5; }
+    .name-main  { font-weight: 600; color: #f1f5f9; line-height: 1.5; }
     .alias-sub  { font-size: 11px; color: #64748b; margin-top: 3px; }
     .tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; margin: 1px 2px 1px 0; }
 
@@ -65,27 +74,46 @@
 
     #footer { margin-top: 28px; padding: 15px 18px; background: #0f172a; border-radius: 10px; border: 1px solid #1e293b; font-size: 12px; color: #475569; line-height: 1.9; }
     #footer strong { color: #64748b; }
+
+    /* Loading spinner overlay */
+    #loadingOverlay { display: none; position: fixed; inset: 0; background: rgba(10,14,26,.7); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
+    #loadingOverlay.show { display: flex; }
+    .spinner { width: 44px; height: 44px; border: 4px solid #1e293b; border-top-color: #3b82f6; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loadingMsg { color: #94a3b8; font-size: 14px; }
   </style>
 </head>
 <body>
 
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingMsg">데이터 불러오는 중...</div>
+</div>
+
+<!-- HEADER -->
 <div id="header">
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
     <div style="background:#ef4444;border-radius:8px;padding:6px 10px;font-size:18px;">🚫</div>
     <div>
-      <h1>미국 BIS Entity List — 중국 기업</h1>
+      <h1>미국 BIS Entity List — 중국 기업 전체</h1>
       <p>Bureau of Industry and Security · 15 CFR Part 744, Supplement No. 4 · ecfr.gov</p>
     </div>
   </div>
   <div class="stat-row">
-    <div class="stat-box"><div class="slabel">등재 기업 (中)</div><div class="svalue" id="statCount">50+</div></div>
-    <div class="stat-box"><div class="slabel">데이터 출처</div><div class="svalue" id="statSource" style="color:#f59e0b;">주요 기업 목록</div></div>
-    <div class="stat-box"><div class="slabel">최근 갱신</div><div class="svalue">2025년 9월</div></div>
-    <button id="liveBtn" onclick="fetchLive()">🔄 실시간 데이터 조회</button>
+    <div class="stat-box"><div class="slabel">총 등재 기업</div><div class="svalue" id="statCount">—</div></div>
+    <div class="stat-box"><div class="slabel">데이터 출처</div><div class="svalue" id="statSource" style="color:#f59e0b;">로컬 샘플</div></div>
+    <div class="stat-box"><div class="slabel">마지막 조회</div><div class="svalue" id="statTime">—</div></div>
+    <button id="liveBtn" onclick="fetchAll()">🔄 전체 데이터 조회 (700개+)</button>
   </div>
-  <div id="liveError"></div>
+  <div id="progressWrap">
+    <div id="progressLabel">준비 중...</div>
+    <div id="progressBar"><div id="progressFill"></div></div>
+  </div>
+  <div id="alertBox"></div>
 </div>
 
+<!-- CONTROLS -->
 <div id="controls">
   <div class="search-row">
     <input id="searchInput" type="text" placeholder="🔍  기업명, 도시, 제재 사유 검색..." oninput="onSearch()"/>
@@ -100,12 +128,13 @@
   <div id="resultCount"></div>
 </div>
 
+<!-- TABLE -->
 <div id="main">
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th id="th-num">#</th>
+          <th class="num-cell">#</th>
           <th id="th-name" onclick="setSort('name')">기업명</th>
           <th>분류</th>
           <th id="th-city" onclick="setSort('city')">도시</th>
@@ -120,12 +149,13 @@
   <div id="footer">
     <strong>📌 출처 및 유의사항</strong><br>
     • 공식 출처: <a href="https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-744/appendix-Supplement%20No.%204%20to%20Part%20744" target="_blank">ecfr.gov — 15 CFR Part 744, Supplement No. 4</a><br>
-    • 검색: <a href="https://www.trade.gov/consolidated-screening-list" target="_blank">trade.gov Consolidated Screening List</a><br>
-    • 본 목록은 참고용이며 최신 공식 목록은 위 링크에서 확인하세요. 2024~2025년 추가 기업 포함.
+    • API: <a href="https://www.trade.gov/consolidated-screening-list" target="_blank">trade.gov Consolidated Screening List API</a><br>
+    • 본 목록은 참고용이며 법적 효력이 없습니다. 최신 공식 목록은 위 링크에서 확인하세요.
   </div>
 </div>
 
 <script>
+// ── 카테고리 & 색상 ───────────────────────────────────
 var CATEGORIES = [
   {key:"all",           label:"전체"},
   {key:"military",      label:"🎖 군사/국방"},
@@ -134,68 +164,42 @@ var CATEGORIES = [
   {key:"telecom",       label:"📡 통신/5G"},
   {key:"quantum",       label:"⚛️ 양자기술"},
   {key:"aerospace",     label:"🚀 우주/항공"},
-  {key:"surveillance",  label:"📷 감시기술"}
+  {key:"surveillance",  label:"📷 감시기술"},
+  {key:"nuclear",       label:"☢️ 핵/WMD"},
+  {key:"bio",           label:"🧬 바이오/유전체"}
 ];
 
 var CAT_COLORS = {
   military:"#ef4444", semiconductor:"#3b82f6", ai:"#8b5cf6",
   telecom:"#f59e0b",  quantum:"#06b6d4",       aerospace:"#10b981",
-  surveillance:"#f97316"
+  surveillance:"#f97316", nuclear:"#ec4899",   bio:"#84cc16"
 };
 
+// ── 샘플 데이터 (API 실패 시 폴백) ───────────────────
 var LOCAL_DATA = [
-  {name:"Huawei Technologies Co., Ltd.",                              category:["telecom","ai"],             reason:"5G 기술 및 국가안보 위협",             year:2019, city:"Shenzhen"},
-  {name:"Semiconductor Manufacturing International Corp. (SMIC)",     category:["semiconductor"],            reason:"군사 최종 사용자 지원",               year:2020, city:"Shanghai"},
-  {name:"Hikvision",                                                  category:["surveillance"],             reason:"신장 위구르족 탄압 관련 감시 장비",     year:2019, city:"Hangzhou"},
-  {name:"Dahua Technology",                                           category:["surveillance"],             reason:"신장 위구르족 탄압 관련 감시 장비",     year:2019, city:"Hangzhou"},
-  {name:"DJI (SZ DJI Technology Co., Ltd.)",                          category:["surveillance","military"],  reason:"중국 군사/안보 기관 지원",             year:2022, city:"Shenzhen"},
-  {name:"Yangtze Memory Technologies Corp. (YMTC)",                   category:["semiconductor"],            reason:"군사 지원 및 Huawei 거래",            year:2022, city:"Wuhan"},
-  {name:"Inspur Group Co., Ltd.",                                     category:["ai","military"],            reason:"군사용 슈퍼컴퓨터 개발 지원",          year:2023, city:"Jinan"},
-  {name:"Beijing Academy of Artificial Intelligence (BAAI)",          category:["ai","military"],            reason:"AI 군사 현대화 기여",                 year:2021, city:"Beijing"},
-  {name:"Phytium Technology Co., Ltd.",                               category:["semiconductor","military"], reason:"슈퍼컴퓨터 및 군사 응용 칩 개발",      year:2021, city:"Tianjin"},
-  {name:"Sugon (Dawning Information Industry Co.)",                   category:["semiconductor","military"], reason:"슈퍼컴퓨터 개발 군사 지원",            year:2019, city:"Beijing"},
-  {name:"Hygon Information Technology Co., Ltd.",                     category:["semiconductor"],            reason:"군사용 반도체 개발",                  year:2019, city:"Tianjin"},
-  {name:"SiEnergy Systems (Shanghai)",                                category:["semiconductor"],            reason:"군사 목적 반도체 수출 우려",           year:2021, city:"Shanghai"},
-  {name:"Harbin Institute of Technology",                             category:["military","ai"],            reason:"군사 연구 기관",                      year:2020, city:"Harbin"},
-  {name:"Harbin Engineering University",                              category:["military"],                 reason:"군사 연구 기관",                      year:2020, city:"Harbin"},
-  {name:"National University of Defense Technology (NUDT)",           category:["military"],                 reason:"중국 군사 대학",                      year:2015, city:"Changsha"},
-  {name:"China Electronics Technology Group Corp. (CETC)",            category:["military","telecom"],       reason:"군 전자장비 제조",                    year:2019, city:"Beijing"},
-  {name:"Aero Engine Corporation of China",                           category:["aerospace","military"],     reason:"군용 항공기 엔진 개발",               year:2020, city:"Beijing"},
-  {name:"Aviation Industry Corporation of China (AVIC)",              category:["aerospace","military"],     reason:"군용 항공기 및 무기 개발",             year:2020, city:"Beijing"},
-  {name:"China Aerospace Science and Technology Corp. (CASC)",        category:["aerospace","military"],     reason:"군사 우주/미사일 개발",               year:2020, city:"Beijing"},
-  {name:"China Aerospace Science and Industry Corp. (CASIC)",         category:["aerospace","military"],     reason:"군사 우주/미사일 개발",               year:2020, city:"Beijing"},
-  {name:"CloudMinds Technology",                                      category:["ai"],                       reason:"군사 AI 응용 우려",                  year:2019, city:"Beijing"},
-  {name:"Megvii Technology (Face++)",                                 category:["ai","surveillance"],        reason:"신장 안면인식 감시 시스템",            year:2019, city:"Beijing"},
-  {name:"SenseTime Group",                                            category:["ai","surveillance"],        reason:"신장 위구르 감시 AI 개발",            year:2019, city:"Beijing"},
-  {name:"Yitu Technology",                                            category:["ai","surveillance"],        reason:"인권 탄압 관련 얼굴 인식 AI",          year:2019, city:"Shanghai"},
-  {name:"iFLYTEK Co., Ltd.",                                          category:["ai","surveillance"],        reason:"위구르족 감시/탄압 기술 지원",          year:2019, city:"Hefei"},
-  {name:"Intellifusion",                                              category:["ai","surveillance"],        reason:"신장 감시 관련 AI",                  year:2019, city:"Shenzhen"},
-  {name:"Leon Technology",                                            category:["surveillance"],             reason:"신장 감시 기술",                      year:2019, city:"Urumqi"},
-  {name:"Netsense",                                                   category:["surveillance"],             reason:"신장 감시 기술",                      year:2019, city:"Urumqi"},
-  {name:"FiberHome Telecommunication Technologies",                   category:["telecom"],                  reason:"화웨이 연계 통신장비",                year:2020, city:"Wuhan"},
-  {name:"ZTE Corporation",                                            category:["telecom"],                  reason:"이란/북한 제재 위반",                 year:2016, city:"Shenzhen"},
-  {name:"China Intl Telecommunications Construction Corp. (CITCC)",   category:["telecom"],                  reason:"군 관련 통신 인프라",                 year:2020, city:"Beijing"},
-  {name:"Loongson Technology Corporation",                            category:["semiconductor"],            reason:"군사용 프로세서 개발",                year:2021, city:"Beijing"},
-  {name:"Tianjin Phytium Information Technology",                     category:["semiconductor","military"], reason:"군사용 고성능 칩 개발",               year:2021, city:"Tianjin"},
-  {name:"SMIC Advanced Technology R&D (Shanghai) Corporation",        category:["semiconductor"],            reason:"첨단 반도체 군사 지원",               year:2024, city:"Shanghai"},
-  {name:"Northern Integrated Circuit Technology Innovation Center",   category:["semiconductor"],            reason:"첨단 반도체 군사 지원",               year:2024, city:"Beijing"},
-  {name:"Shanghai IC Equipment & Materials Industry Innovation Ctr",  category:["semiconductor"],            reason:"군사용 IC 개발/생산 지원",            year:2024, city:"Shanghai"},
-  {name:"Zhangjiang Laboratory",                                      category:["semiconductor","ai"],       reason:"군사용 IC 개발/생산 지원",            year:2024, city:"Shanghai"},
-  {name:"Beijing Zhipu Huazhang Technology Co., Ltd.",                category:["ai","military"],            reason:"군 AI 현대화 기여",                  year:2025, city:"Beijing"},
-  {name:"Shanghai Fudan Microelectronics Group",                      category:["semiconductor","military"], reason:"군 현대화 및 수출통제 우회",           year:2025, city:"Shanghai"},
-  {name:"BGI Genomics",                                               category:["military"],                 reason:"군/안보 목적 유전체 데이터 수집",       year:2023, city:"Shenzhen"},
-  {name:"Complete Genomics",                                          category:["military"],                 reason:"BGI 계열 유전체 데이터",              year:2023, city:"Shenzhen"},
-  {name:"China General Nuclear Power Group (CGN)",                    category:["military"],                 reason:"핵무기 소재 획득 시도",               year:2019, city:"Shenzhen"},
-  {name:"Huawei Marine Networks Co.",                                 category:["telecom"],                  reason:"화웨이 연계 해저케이블 사업",          year:2019, city:"Tianjin"},
-  {name:"H3C Technologies Co., Ltd.",                                 category:["telecom","ai"],             reason:"화웨이 연계 네트워크 장비",            year:2019, city:"Hangzhou"},
-  {name:"Shenzhen SiCarrier Technologies",                            category:["semiconductor"],            reason:"첨단 반도체 장비 개발",               year:2024, city:"Shenzhen"},
-  {name:"Nanjing Zhihu Information Technology",                       category:["ai"],                       reason:"AI 군사 현대화 기여",                 year:2025, city:"Nanjing"},
-  {name:"Beijing Innovation Wisdom Technology Co., Ltd.",             category:["ai"],                       reason:"AI 군사 현대화 기여",                 year:2025, city:"Beijing"},
-  {name:"Goodview Global",                                            category:["military"],                 reason:"이란 IRGC용 드론 부품 공급망",         year:2025, city:"Shanghai"},
-  {name:"China Academy of Launch Vehicle Technology (CALT)",          category:["aerospace","military"],     reason:"탄도미사일 및 우주발사체 개발",         year:2020, city:"Beijing"},
-  {name:"Wuhan Hongxin Semiconductor Manufacturing Co. (HSMC)",       category:["semiconductor"],            reason:"SMIC 연계 첨단 반도체",               year:2020, city:"Wuhan"}
+  {name:"Huawei Technologies Co., Ltd.",                             category:["telecom","ai"],             reason:"5G 기술 및 국가안보 위협",             year:2019, city:"Shenzhen",  aliases:[]},
+  {name:"Semiconductor Manufacturing International Corp. (SMIC)",    category:["semiconductor"],            reason:"군사 최종 사용자 지원",               year:2020, city:"Shanghai",  aliases:[]},
+  {name:"Hikvision",                                                 category:["surveillance"],             reason:"신장 위구르족 탄압 관련 감시 장비",     year:2019, city:"Hangzhou",  aliases:[]},
+  {name:"Dahua Technology",                                          category:["surveillance"],             reason:"신장 위구르족 탄압 관련 감시 장비",     year:2019, city:"Hangzhou",  aliases:[]},
+  {name:"DJI (SZ DJI Technology Co., Ltd.)",                         category:["surveillance","military"],  reason:"중국 군사/안보 기관 지원",             year:2022, city:"Shenzhen",  aliases:[]},
+  {name:"Yangtze Memory Technologies Corp. (YMTC)",                  category:["semiconductor"],            reason:"군사 지원 및 Huawei 거래",            year:2022, city:"Wuhan",     aliases:[]},
+  {name:"Inspur Group Co., Ltd.",                                    category:["ai","military"],            reason:"군사용 슈퍼컴퓨터 개발 지원",          year:2023, city:"Jinan",     aliases:[]},
+  {name:"Beijing Academy of Artificial Intelligence (BAAI)",         category:["ai","military"],            reason:"AI 군사 현대화 기여",                 year:2021, city:"Beijing",   aliases:[]},
+  {name:"Phytium Technology Co., Ltd.",                              category:["semiconductor","military"], reason:"슈퍼컴퓨터 및 군사 응용 칩 개발",      year:2021, city:"Tianjin",   aliases:[]},
+  {name:"Sugon (Dawning Information Industry Co.)",                  category:["semiconductor","military"], reason:"슈퍼컴퓨터 개발 군사 지원",            year:2019, city:"Beijing",   aliases:[]},
+  {name:"SenseTime Group",                                           category:["ai","surveillance"],        reason:"신장 위구르 감시 AI 개발",            year:2019, city:"Beijing",   aliases:[]},
+  {name:"Megvii Technology (Face++)",                                category:["ai","surveillance"],        reason:"신장 안면인식 감시 시스템",            year:2019, city:"Beijing",   aliases:[]},
+  {name:"iFLYTEK Co., Ltd.",                                         category:["ai","surveillance"],        reason:"위구르족 감시/탄압 기술 지원",          year:2019, city:"Hefei",     aliases:[]},
+  {name:"ZTE Corporation",                                           category:["telecom"],                  reason:"이란/북한 제재 위반",                 year:2016, city:"Shenzhen",  aliases:[]},
+  {name:"BGI Genomics",                                              category:["military","bio"],           reason:"군/안보 목적 유전체 데이터 수집",       year:2023, city:"Shenzhen",  aliases:[]},
+  {name:"China General Nuclear Power Group (CGN)",                   category:["nuclear","military"],       reason:"핵무기 소재 획득 시도",               year:2019, city:"Shenzhen",  aliases:[]},
+  {name:"Aviation Industry Corporation of China (AVIC)",             category:["aerospace","military"],     reason:"군용 항공기 및 무기 개발",             year:2020, city:"Beijing",   aliases:[]},
+  {name:"China Aerospace Science and Technology Corp. (CASC)",       category:["aerospace","military"],     reason:"군사 우주/미사일 개발",               year:2020, city:"Beijing",   aliases:[]},
+  {name:"National University of Defense Technology (NUDT)",          category:["military"],                 reason:"중국 군사 대학",                      year:2015, city:"Changsha",  aliases:[]},
+  {name:"Shanghai Fudan Microelectronics Group",                     category:["semiconductor","military"], reason:"군 현대화 및 수출통제 우회",           year:2025, city:"Shanghai",  aliases:[]}
 ];
 
+// ── 상태 ──────────────────────────────────────────────
 var state = {
   data: LOCAL_DATA,
   search: "",
@@ -204,9 +208,148 @@ var state = {
   sortDir: "asc",
   page: 1,
   expandedIdx: -1,
-  PER_PAGE: 20
+  PER_PAGE: 25
 };
 
+// ── 카테고리 추론 ─────────────────────────────────────
+function guessCategory(text) {
+  var t = (text || "").toLowerCase();
+  var cats = [];
+  if (/semiconductor|chip|wafer|foundry|smic|memory|nand|dram|ic manufacturing|microelectronics|integrated circuit/.test(t)) cats.push("semiconductor");
+  if (/artificial intelligence|machine learning|neural|deep learning|zhipu|megvii|sensetime|yitu|baai|iflytek|facial recognition/.test(t)) cats.push("ai");
+  if (/telecom|5g|huawei|zte|fiber|fiberHome|network equipment|communication technology/.test(t)) cats.push("telecom");
+  if (/quantum/.test(t)) cats.push("quantum");
+  if (/aerospace|aviation|rocket|missile|satellite|space technology|launch vehicle|aero engine/.test(t)) cats.push("aerospace");
+  if (/surveillance|camera|hikvision|dahua|monitoring|tracking/.test(t)) cats.push("surveillance");
+  if (/nuclear|uranium|plutonium|atomic|wmd|weapons of mass/.test(t)) cats.push("nuclear");
+  if (/genomics|genetic|dna|biology|bgi|biotech|biotechnology/.test(t)) cats.push("bio");
+  if (/military|defense|army|navy|air force|pla|weapon|munition|ordnance|armament|战/.test(t)) cats.push("military");
+  return cats.length ? cats : ["military"];
+}
+
+// ── 전체 데이터 페이지네이션 fetch ───────────────────
+var API_KEY = "OHZYuksFHSFao8jDXwlyumOs7OB9nkLlEPQKIfnJ";
+var PAGE_SIZE = 100; // API 최대값
+
+function setProgress(pct, label) {
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = label;
+}
+
+function showAlert(msg, type) {
+  var el = document.getElementById("alertBox");
+  el.textContent = msg;
+  el.className = "alertBox " + (type === "error" ? "alert-error" : "alert-info");
+  el.style.display = "block";
+}
+
+function hideAlert() {
+  document.getElementById("alertBox").style.display = "none";
+}
+
+function fetchAll() {
+  var btn = document.getElementById("liveBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ 불러오는 중...";
+  document.getElementById("progressWrap").style.display = "block";
+  document.getElementById("loadingOverlay").classList.add("show");
+  hideAlert();
+  setProgress(0, "첫 번째 페이지 요청 중...");
+
+  var allResults = [];
+  var offset = 0;
+  var total = null;
+
+  function fetchPage() {
+    var url = "https://api.trade.gov/gateway/v1/consolidated_screening_list/search" +
+      "?sources=EL&countries=CN&size=" + PAGE_SIZE +
+      "&offset=" + offset +
+      "&api_key=" + API_KEY;
+
+    document.getElementById("loadingMsg").textContent =
+      "데이터 불러오는 중... (" + allResults.length + "개 완료)";
+
+    fetch(url)
+      .then(function(res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function(json) {
+        if (total === null) {
+          total = json.total || 0;
+        }
+
+        var results = json.results || [];
+        for (var i = 0; i < results.length; i++) {
+          var e = results[i];
+          var catText = e.name + " " + (e.programs || []).join(" ") + " " + (e.remarks || "");
+          allResults.push({
+            name:    e.name || "",
+            category: guessCategory(catText),
+            reason:  e.remarks || e.title || "수출 규제 대상",
+            year:    e.start_date ? parseInt(e.start_date.slice(0, 4)) : null,
+            city:    e.addresses && e.addresses[0] ? (e.addresses[0].city || "") : "",
+            country: e.addresses && e.addresses[0] ? (e.addresses[0].country || "") : "",
+            aliases: e.alt_names || []
+          });
+        }
+
+        offset += PAGE_SIZE;
+        var pct = total > 0 ? Math.min(99, Math.round(allResults.length / total * 100)) : 50;
+        setProgress(pct, allResults.length + " / " + total + "개 로드 완료");
+
+        // 더 가져올 데이터가 있으면 계속
+        if (results.length === PAGE_SIZE && allResults.length < total) {
+          // 짧은 딜레이 후 다음 페이지 (API rate limit 방지)
+          setTimeout(fetchPage, 200);
+        } else {
+          // 완료
+          onFetchComplete(allResults, total);
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        showAlert("⚠️ API 오류: " + err.message + " — 로컬 샘플 데이터를 표시합니다.", "error");
+        onFetchComplete(null, 0);
+      });
+  }
+
+  fetchPage();
+}
+
+function onFetchComplete(results, total) {
+  var btn = document.getElementById("liveBtn");
+  btn.disabled = false;
+  btn.textContent = "🔄 전체 데이터 조회 (700개+)";
+  document.getElementById("progressWrap").style.display = "none";
+  document.getElementById("loadingOverlay").classList.remove("show");
+  setProgress(100, "완료");
+
+  if (results && results.length > 0) {
+    state.data = results;
+    document.getElementById("statSource").textContent = "trade.gov Live";
+    document.getElementById("statSource").style.color = "#10b981";
+    document.getElementById("statCount").textContent = results.length + "개";
+
+    var now = new Date();
+    document.getElementById("statTime").textContent =
+      now.getFullYear() + "/" + (now.getMonth()+1) + "/" + now.getDate() +
+      " " + now.getHours() + ":" + String(now.getMinutes()).padStart(2,"0");
+
+    showAlert("✅ " + results.length + "개 기업 데이터를 성공적으로 불러왔습니다.", "info");
+  } else if (!results) {
+    state.data = LOCAL_DATA;
+    document.getElementById("statSource").textContent = "로컬 샘플";
+    document.getElementById("statSource").style.color = "#f59e0b";
+    document.getElementById("statCount").textContent = LOCAL_DATA.length + "개 (샘플)";
+  }
+
+  state.page = 1;
+  state.expandedIdx = -1;
+  render();
+}
+
+// ── 렌더링 ────────────────────────────────────────────
 function renderCatTabs() {
   var row = document.getElementById("catRow");
   row.innerHTML = CATEGORIES.map(function(c) {
@@ -219,10 +362,12 @@ function getFiltered() {
   var q = state.search.toLowerCase();
   return state.data.filter(function(e) {
     var matchSearch = !q ||
-      e.name.toLowerCase().indexOf(q) >= 0 ||
-      (e.city || "").toLowerCase().indexOf(q) >= 0 ||
-      (e.reason || "").toLowerCase().indexOf(q) >= 0;
-    var matchCat = state.category === "all" || (e.category || []).indexOf(state.category) >= 0;
+      (e.name  || "").toLowerCase().indexOf(q) >= 0 ||
+      (e.city  || "").toLowerCase().indexOf(q) >= 0 ||
+      (e.reason|| "").toLowerCase().indexOf(q) >= 0 ||
+      (e.aliases || []).join(" ").toLowerCase().indexOf(q) >= 0;
+    var matchCat = state.category === "all" ||
+      (e.category || []).indexOf(state.category) >= 0;
     return matchSearch && matchCat;
   });
 }
@@ -259,113 +404,78 @@ function render() {
   var slice = sorted.slice((state.page - 1) * state.PER_PAGE, state.page * state.PER_PAGE);
 
   document.getElementById("resultCount").textContent =
-    total + "개 기업 (" + slice.length + "개 표시 · " + state.page + "/" + pages + " 페이지)";
-  document.getElementById("statCount").textContent = state.data.length + "+";
+    total + "개 기업 검색됨 (" + slice.length + "개 표시 · " + state.page + "/" + pages + " 페이지)";
 
   var rows = "";
   for (var i = 0; i < slice.length; i++) {
-    var e = slice[i];
+    var e   = slice[i];
     var idx = (state.page - 1) * state.PER_PAGE + i + 1;
     var exp = state.expandedIdx === idx;
+
     var yearBadge = e.year
       ? '<span class="year-badge ' + (e.year >= 2024 ? 'year-recent' : 'year-old') + '">' + e.year + '</span>'
       : "—";
-    var aliasHTML = (exp && e.aliases && e.aliases.length)
-      ? '<div class="alias-sub">별칭: ' + e.aliases.join(", ") + '</div>' : "";
+
+    var aliasHTML = "";
+    if (exp && e.aliases && e.aliases.length) {
+      aliasHTML = '<div class="alias-sub">별칭: ' + e.aliases.join(", ") + '</div>';
+    }
+
     rows += '<tr class="' + (exp ? "expanded" : "") + '" onclick="toggleRow(' + idx + ')">' +
       '<td class="num-cell">' + idx + '</td>' +
-      '<td><div class="name-main">' + e.name + '</div>' + aliasHTML + '</td>' +
+      '<td><div class="name-main">' + escHTML(e.name) + '</div>' + aliasHTML + '</td>' +
       '<td>' + tagHTML(e.category) + '</td>' +
-      '<td class="city-cell">' + (e.city || "—") + '</td>' +
+      '<td class="city-cell">' + escHTML(e.city || "—") + '</td>' +
       '<td class="year-cell">' + yearBadge + '</td>' +
-      '<td class="reason-cell' + (exp ? ' expanded-cell' : '') + '">' + (e.reason || "") + '</td>' +
+      '<td class="reason-cell' + (exp ? ' expanded-cell' : '') + '">' + escHTML(e.reason || "") + '</td>' +
       '</tr>';
   }
   document.getElementById("tableBody").innerHTML = rows;
 
-  // sort header labels
-  var headers = {name:"기업명", city:"도시", year:"등재연도"};
-  for (var k in headers) {
+  // 헤더 정렬 표시
+  var hdrs = {name:"기업명", city:"도시", year:"등재연도"};
+  for (var k in hdrs) {
     var th = document.getElementById("th-" + k);
     if (!th) continue;
-    th.textContent = headers[k] + (state.sortKey === k ? (state.sortDir === "asc" ? " ▲" : " ▼") : "");
+    th.textContent = hdrs[k] + (state.sortKey === k ? (state.sortDir === "asc" ? " ▲" : " ▼") : "");
     th.className = state.sortKey === k ? "sorted" : "";
   }
 
   renderPagination(pages);
 }
 
+function escHTML(s) {
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
 function renderPagination(pages) {
   var el = document.getElementById("pagination");
   if (pages <= 1) { el.innerHTML = ""; return; }
-  var html = '<button class="page-btn" onclick="goPage(1)"' + (state.page === 1 ? ' disabled' : '') + '>◀◀</button>';
-  html += '<button class="page-btn" onclick="goPage(' + (state.page - 1) + ')"' + (state.page === 1 ? ' disabled' : '') + '>◀</button>';
+  var html = "";
+  html += '<button class="page-btn" onclick="goPage(1)"' + (state.page===1?" disabled":"") + '>◀◀</button>';
+  html += '<button class="page-btn" onclick="goPage(' + (state.page-1) + ')"' + (state.page===1?" disabled":"") + '>◀</button>';
   var start = Math.max(1, Math.min(state.page - 3, pages - 6));
   for (var p = start; p <= Math.min(start + 6, pages); p++) {
-    html += '<button class="page-btn' + (p === state.page ? ' active' : '') + '" onclick="goPage(' + p + ')">' + p + '</button>';
+    html += '<button class="page-btn' + (p===state.page?" active":"") + '" onclick="goPage(' + p + ')">' + p + '</button>';
   }
-  html += '<button class="page-btn" onclick="goPage(' + (state.page + 1) + ')"' + (state.page === pages ? ' disabled' : '') + '>▶</button>';
-  html += '<button class="page-btn" onclick="goPage(' + pages + ')"' + (state.page === pages ? ' disabled' : '') + '>▶▶</button>';
+  html += '<button class="page-btn" onclick="goPage(' + (state.page+1) + ')"' + (state.page===pages?" disabled":"") + '>▶</button>';
+  html += '<button class="page-btn" onclick="goPage(' + pages + ')"' + (state.page===pages?" disabled":"") + '>▶▶</button>';
   el.innerHTML = html;
 }
 
+// ── 이벤트 핸들러 ─────────────────────────────────────
 function onSearch()     { state.search = document.getElementById("searchInput").value; state.page = 1; render(); }
 function setCategory(k) { state.category = k; state.page = 1; renderCatTabs(); render(); }
-function setSort(k)     { if (state.sortKey === k) { state.sortDir = state.sortDir === "asc" ? "desc" : "asc"; } else { state.sortKey = k; state.sortDir = "asc"; } state.page = 1; render(); }
-function onSortChange() { state.sortKey = document.getElementById("sortSelect").value; state.page = 1; render(); }
-function toggleDir()    { state.sortDir = state.sortDir === "asc" ? "desc" : "asc"; document.getElementById("sortDirBtn").textContent = state.sortDir === "asc" ? "↑ 오름차순" : "↓ 내림차순"; render(); }
+function setSort(k)     { if (state.sortKey===k) { state.sortDir = state.sortDir==="asc"?"desc":"asc"; } else { state.sortKey=k; state.sortDir="asc"; } state.page=1; render(); }
+function onSortChange() { state.sortKey = document.getElementById("sortSelect").value; state.page=1; render(); }
+function toggleDir()    { state.sortDir = state.sortDir==="asc"?"desc":"asc"; document.getElementById("sortDirBtn").textContent = state.sortDir==="asc"?"↑ 오름차순":"↓ 내림차순"; render(); }
 function goPage(p)      { state.page = p; render(); }
-function toggleRow(idx) { state.expandedIdx = state.expandedIdx === idx ? -1 : idx; render(); }
+function toggleRow(idx) { state.expandedIdx = state.expandedIdx===idx ? -1 : idx; render(); }
 
-function guessCategory(text) {
-  var t = text.toLowerCase(); var cats = [];
-  if (/semiconductor|chip|ic |wafer|foundry|smic|memory|nand|dram/.test(t)) cats.push("semiconductor");
-  if (/artificial intelligence|ai |machine learning|neural|zhipu|megvii|sensetime|yitu|baai/.test(t)) cats.push("ai");
-  if (/telecom|5g|huawei|zte|fiber|network|communication/.test(t)) cats.push("telecom");
-  if (/quantum/.test(t)) cats.push("quantum");
-  if (/aerospace|aviation|rocket|missile|satellite|space|launch/.test(t)) cats.push("aerospace");
-  if (/surveillance|facial|recognition|camera|hikvision|dahua/.test(t)) cats.push("surveillance");
-  if (/military|defense|army|navy|pla|nuclear|weapon/.test(t)) cats.push("military");
-  return cats.length ? cats : ["military"];
-}
-
-function fetchLive() {
-  var btn = document.getElementById("liveBtn");
-  var err = document.getElementById("liveError");
-  btn.disabled = true; btn.textContent = "⏳ 로딩 중...";
-  err.style.display = "none";
-  fetch("https://api.trade.gov/gateway/v1/consolidated_screening_list/search?sources=EL&countries=CN&size=100&api_key=OHZYuksFHSFao8jDXwlyumOs7OB9nkLlEPQKIfnJ")
-    .then(function(res) {
-      if (!res.ok) throw new Error("API 오류");
-      return res.json();
-    })
-    .then(function(json) {
-      state.data = (json.results || []).map(function(e) {
-        return {
-          name:     e.name,
-          category: guessCategory(e.name + " " + (e.programs || []).join(" ")),
-          reason:   e.remarks || e.title || "수출 규제 대상",
-          year:     e.start_date ? parseInt(e.start_date.slice(0, 4)) : null,
-          city:     e.addresses && e.addresses[0] ? e.addresses[0].city : "",
-          aliases:  e.alt_names || []
-        };
-      });
-      document.getElementById("statSource").textContent = "trade.gov Live";
-      document.getElementById("statSource").style.color = "#10b981";
-      state.page = 1; render();
-    })
-    .catch(function() {
-      err.textContent = "⚠️ 실시간 API 연결 실패. 로컬 데이터를 표시합니다.";
-      err.style.display = "block";
-      state.data = LOCAL_DATA;
-      state.page = 1; render();
-    })
-    .finally(function() {
-      btn.disabled = false; btn.textContent = "🔄 실시간 데이터 조회";
-    });
-}
-
-// 초기 실행
+// ── 초기화 ────────────────────────────────────────────
+document.getElementById("statCount").textContent = LOCAL_DATA.length + "개 (샘플)";
 renderCatTabs();
 render();
 </script>
